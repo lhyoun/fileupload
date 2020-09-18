@@ -132,22 +132,36 @@ public class SampleController {
 	
 	// 여기는 업로드 했을 때 그 파일이 이미지가 아닌 다른 파일이면 다운로드가 가능한데 그 다운로드에 해당하는 내용이다
 	
+	// form에서 down를 요청했을 때 오는곳
+	// produces = MediaType.APPLICATION_OCTET_STREAM_VALUE 이거는 파일내용을 return해줄 때 적음
 	@GetMapping(value = "/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	@ResponseBody
 	public ResponseEntity<Resource> downloadFile(@RequestHeader("User-Agent") String userAgent, String fileName) {
-
+	
 		Resource resource = new FileSystemResource("d:\\upload\\" + fileName);
-
+		// 일단 Resource는 인터페이스다
+		// 이 인터페이스에 FileSystemResource class의 객체를 담는데
+		// 이 객체는 d:\\upload\\" + fileName이다.
+		// 참고로 fileName은
+		// str += "<li><div><a href='/sample/download?fileName="+fileCallPath+"'>" 이런식으로 download를 요청할 때 보내주기 때문에
+		// 어떠한 경로에 있는 특정 파일을 Resource에 담게되는 것이다
+		
 		if (resource.exists() == false) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
+		// 만약 다운로드 하려는 파일이 존재하지 않는 파일이면 HttpStatus.NOT_FOUND를 return
 
 		String resourceName = resource.getFilename();
-
+		// FileSystemResource는 파일이름을 불러오는 method가 있나보다
+		
 		// remove UUID
 		String resourceOriginalName = resourceName.substring(resourceName.indexOf("_") + 1);
+		// 지금 우리가 다운로드 하려는 파일의 이름은 저장할 때 앞에 uuid를 붙여서 djkaks;dal;skel;kal;mc_실제이름 이런식으로 저장되어 있는데
+		// 여기서 실제이름만 뽑아내는 작업
 
+		// 아래는 인코딩 후 다운로드 하고자 하는 파일을 return해주는 내용인듯
 		HttpHeaders headers = new HttpHeaders();
+		
 		try {
 
 			boolean checkIE = (userAgent.indexOf("MSIE") > -1 || userAgent.indexOf("Trident") > -1);
@@ -200,8 +214,10 @@ public class SampleController {
 	@PostMapping("/deleteFile")
 	@ResponseBody
 	public ResponseEntity<String> deleteFile(String fileName, String type) {
+		// 일단 파일이름과 type을 알고있다.
+		// 
 		log.info("deleteFile: " + fileName);
-
+		
 		File file;
 		try {
 			file = new File("d:\\upload\\" + URLDecoder.decode(fileName, "UTF-8"));
